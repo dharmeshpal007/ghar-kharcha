@@ -1,54 +1,98 @@
-# React + TypeScript + Vite
+# 💸 Ghar Kharcha – Daily Expense Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Ghar Kharcha** is a human-centered personal finance app built for Indian users. Whether you're tracking expenses for yourself or managing the finances of a joint family, this app simplifies money management with a culturally relevant, intuitive experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+### 🔐 Role-Based Access
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Separate views and permissions for **individuals** and **family members**.
+- Easily manage shared vs personal finances.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 💬 Emotion-Tagged Expenses
+
+- Tag each expense with a mood like 😄 Happy, 😟 Stressed, or 😐 Neutral.
+- Get emotional insights like:
+  > "You spend the most when stressed"  
+  > "Weekend happy meals cost ₹3500/month"
+
+### 📊 Smart Views
+
+- Switch between **Daily**, **Weekly**, and **Monthly** reports.
+- Set **custom goals** and track savings progress over time.
+
+### 📅 Indian Financial Year Support
+
+- Toggle between **Calendar Year** and **Indian FY (Apr–Mar)**.
+- Built-in tax summary view to prep for **ITR filings** and **CA meetings**.
+
+### ⚡ Superfast Daily Entries
+
+- Log expenses or income in under **10 seconds**.
+- Amount-first input, emoji-powered category picker, and smart defaults.
+
+### 🎯 Save-for-Goal Feature
+
+- Plan and save for Indian events like:
+  - 🏫 School Fees
+  - 🪔 Diwali Budget
+  - 💍 Wedding Gifts
+  - 🪙 Gold on Dhanteras
+
+### 📱 PWA Support
+
+- Install the app on mobile with a native app-like experience.
+- Works **offline** and updates **in real time**.
+
+### 📬 WhatsApp-style Insight Digest
+
+- Get smart summaries like:
+  > “You spent ₹8,410 more than you earned this month. Grocery bills rose 27%. Want help finding ways to save?”
+
+---
+
+## 🔧 Tech Stack
+
+- **Frontend**: React.js + Material UI + PWA
+- **Database**: Firebase
+- **Authentication**: Firebase Auth / Role-based custom system (Planned)
+
+---
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git@github.com:dharmeshpal007/ghar-kharcha.git
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Go to the project directory
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+  cd ghar-kharcha
 ```
+
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the server
+
+```bash
+  npm run dev
+```
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
+## Authors
+
+- [@Team Node Baba Ki Coding Sabha](https://www.github.com/octokatherine)
+
+A project built during the coding hackathon in Scaletech Solutions. ☕🇮🇳
