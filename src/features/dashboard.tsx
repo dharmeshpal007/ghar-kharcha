@@ -1,9 +1,9 @@
-import { Box, Typography, Card, Grid, Button, TextField, Chip, MenuItem, Select, InputLabel, FormControl, ToggleButton, ToggleButtonGroup, Divider, Dialog, DialogTitle, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, LinearProgress, Avatar, TablePagination } from "@mui/material";
+import { Box, Typography, Card, Grid, Button, TextField, Chip, MenuItem, Select, InputLabel, FormControl, ToggleButton, ToggleButtonGroup, Divider, Dialog, DialogTitle, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, LinearProgress, Avatar, TablePagination, Tooltip, styled } from "@mui/material";
 import { useState, useEffect } from "react";
-import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward, Delete, Edit } from "@mui/icons-material";
+import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward, Delete, Edit, Star, Info } from "@mui/icons-material";
 import { addExpense, Expense, listenExpenses, deleteExpense, updateExpense } from "../services/firebase";
 import { SelectChangeEvent } from "@mui/material";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { useAuthStore } from "../store/authStore";
 
 const initialCategories = [
@@ -26,6 +26,10 @@ const moods = [
 const users = ["Me", "Mom", "Dad", "Sister"];
 const goals = ["Trip to Goa", "New Phone", "Emergency Fund"];
 
+// Add mood categories after the moods array
+const goodMoods = ["Happy", "Neutral", "Satisfied"];
+const badMoods = ["Stressed", "Impulsive", "Regretful"];
+
 // Helper to get start of week (Monday)
 function getStartOfWeek(date: Date) {
   const d = new Date(date);
@@ -41,6 +45,22 @@ function formatDate(date: Date) {
 
 // Days of week labels
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// Add styled tooltip component after imports
+const StyledTooltip = styled(({ className, ...props }: any) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  '& .MuiTooltip-tooltip': {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    color: '#333',
+    maxWidth: 300,
+    fontSize: '0.875rem',
+    border: '1px solid #ddd',
+    padding: '12px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    borderRadius: '8px',
+  },
+}));
 
 const Dashboard = () => {
   // Entry form state
@@ -199,12 +219,12 @@ const Dashboard = () => {
     const dayDate = new Date(startOfWeekDate);
     dayDate.setDate(startOfWeekDate.getDate() + idx);
     const dayStr = formatDate(dayDate);
-    const total = filteredExpenses.filter(e => e.date === dayStr).reduce((sum, e) => sum + (e.amount || 0), 0);
+    const total = filteredExpenses.filter(e => e.date === dayStr && e.type === 'expense').reduce((sum, e) => sum + (e.amount || 0), 0);
     return { day: label, total };
   });
 
   // Weekly bar chart data (by mood)
-  const weekMoods = filteredExpenses.filter(e => weekDates.includes(e.date) && e.mood);
+  const weekMoods = filteredExpenses.filter(e => weekDates.includes(e.date) && e.mood && e.type === 'expense');
   const moodTotals: Record<string, number> = {};
   weekMoods.forEach(e => {
     if (e.mood) moodTotals[e.mood] = (moodTotals[e.mood] || 0) + (e.amount || 0);
@@ -221,7 +241,7 @@ const Dashboard = () => {
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
   // Calculate today's mood summary and mode
-  const todayMoods = filteredExpenses.filter(e => e.date === yesterdayStr && e.mood);
+  const todayMoods = filteredExpenses.filter(e => e.date === todayStr && e.mood);
   const moodSummary: Record<string, number> = {};
   todayMoods.forEach(e => {
     if (e.mood) moodSummary[e.mood] = (moodSummary[e.mood] || 0) + 1;
@@ -239,7 +259,7 @@ const Dashboard = () => {
   const weekCategories = categories.filter(cat => cat.label !== 'More');
   const categoryChartData = weekCategories.map(cat => {
     const total = filteredExpenses
-      .filter(e => weekDates.includes(e.date) && e.category === cat.label)
+      .filter(e => weekDates.includes(e.date) && e.category === cat.label && e.type === 'expense')
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     return { category: cat.label, total };
   });
@@ -295,6 +315,100 @@ const Dashboard = () => {
           Empowering your family's financial journey!
         </Typography>
       </Box>
+
+      {/* USP Mood Analysis Message */}
+      {(() => {
+        // Calculate total expenses for today
+        const totalTodayExpense = filteredExpenses.filter(e => e.date === todayStr && e.type === 'expense').reduce((sum, e) => sum + (e.amount || 0), 0);
+        // Calculate total expenses for each mood for today
+        const moodExpenseTotals: Record<string, number> = {};
+        filteredExpenses.filter(e => e.date === todayStr && e.type === 'expense' && e.mood).forEach(e => {
+          moodExpenseTotals[e.mood] = (moodExpenseTotals[e.mood] || 0) + (e.amount || 0);
+        });
+        // Find the mood with the highest expense
+        let topMood = '';
+        let topAmount = 0;
+        Object.entries(moodExpenseTotals).forEach(([mood, amount]) => {
+          if (amount > topAmount) {
+            topMood = mood;
+            topAmount = amount;
+          }
+        });
+        if (topMood && totalTodayExpense > 0) {
+          // Find mood label for the emoji
+          const moodLabel = moods.find(m => m.icon === topMood)?.label || topMood;
+          const percent = Math.round((topAmount / totalTodayExpense) * 100);
+          const isGoodMood = goodMoods.includes(moodLabel);
+          
+          return (
+            <Card sx={{
+              mb: 3,
+              p: 2,
+              bgcolor: isGoodMood ? '#e8f5e9' : '#ffebee',
+              border: `2px solid ${isGoodMood ? '#81c784' : '#e57373'}`,
+              boxShadow: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              justifyContent: 'center',
+              position: 'relative',
+            }}>
+              <Star sx={{ color: isGoodMood ? '#43a047' : '#e53935', fontSize: 36, mr: 1 }} />
+              <Box>
+                <Typography sx={{ fontWeight: 600, color: '#333', fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+                  You have spent {percent}% of expenses while you are in {moodLabel.toLowerCase()}.
+                </Typography>
+              </Box>
+              <StyledTooltip 
+                title={
+                  isGoodMood 
+                    ? (
+                      <Box sx={{ p: 1 }}>
+                        <Typography variant="subtitle2" sx={{ color: '#43a047', fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <span role="img" aria-label="star">⭐</span> Great Spending Habits!
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666' }}>
+                          You're making mindful spending decisions! This positive mood helps you make better financial choices. Keep up the good work! 🎯
+                        </Typography>
+                      </Box>
+                    )
+                    : (
+                      <Box sx={{ p: 1 }}>
+                        <Typography variant="subtitle2" sx={{ color: '#e53935', fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <span role="img" aria-label="lightbulb">💡</span> Smart Spending Tips
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                          When feeling {moodLabel.toLowerCase()}, try these strategies:
+                        </Typography>
+                        <Box component="ul" sx={{ m: 0, pl: 2, color: '#666' }}>
+                          <Typography component="li" variant="body2">Take a 24-hour pause before purchases ⏰</Typography>
+                          <Typography component="li" variant="body2">Set aside a small budget for impulse buys 💰</Typography>
+                          <Typography component="li" variant="body2">Practice stress-relief activities 🧘‍♂️</Typography>
+                          <Typography component="li" variant="body2">Track your spending triggers 📝</Typography>
+                        </Box>
+                      </Box>
+                    )
+                }
+                arrow
+                placement="right"
+              >
+                <Info 
+                  sx={{ 
+                    color: isGoodMood ? '#43a047' : '#e53935',
+                    cursor: 'pointer',
+                    ml: 1,
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.2)'
+                    }
+                  }} 
+                />
+              </StyledTooltip>
+            </Card>
+          );
+        }
+        return null;
+      })()}
 
       {/* Greeting & Snapshots */}
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
@@ -381,18 +495,17 @@ const Dashboard = () => {
             }}>{modeMood || <EmojiEmotions />}</Avatar>
             <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Mood Tags</Typography>
             <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center' }}>
-              {Object.entries(moodSummary).length === 0 ? (
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}>No moods today</Typography>
-              ) : (
-                Object.entries(moodSummary).map(([icon, count]) => (
-                  <Chip 
-                    key={icon} 
-                    label={`${icon} x${count}`} 
-                    size="small" 
-                    sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
-                  />
-                ))
-              )}
+              {moods.map(m => (
+                <Tooltip key={m.label} title={m.label} arrow>
+                  <span>
+                    <Chip
+                      label={`${m.icon} x${moodSummary[m.icon] || 0}`}
+                      size="small"
+                      sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
+                    />
+                  </span>
+                </Tooltip>
+              ))}
             </Box>
           </Card>
         </Grid>
@@ -593,7 +706,7 @@ const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" tick={{ fontSize: 10 }} />
               <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
-              <Tooltip />
+              <RechartsTooltip />
               <Legend />
               <Bar dataKey="total" fill="#3183FF" name="Total Spend" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -602,7 +715,7 @@ const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mood" tick={{ fontSize: 10 }} />
               <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
-              <Tooltip />
+              <RechartsTooltip />
               <Legend />
               <Bar dataKey="total" fill="#43a047" name="Total Spend" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -611,7 +724,7 @@ const Dashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="category" tick={{ fontSize: 10 }} />
               <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
-              <Tooltip />
+              <RechartsTooltip />
               <Legend />
               <Bar dataKey="total" fill="#ff9800" name="Total Spend" radius={[8, 8, 0, 0]} />
             </BarChart>

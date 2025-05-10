@@ -1,10 +1,10 @@
 import { Box, FormControl, FormControlLabel, FormHelperText, Radio, RadioGroup, TextField, Typography, InputLabel, Select, MenuItem } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { colors } from "../assets/styles/Owntheme";
 import CustomButton from "../shared/components/Button/customButton";
 import { PROJECT_NAME } from "../shared/constants/constants";
 import { useAuthStore } from "../store/authStore";
+import LockIcon from '@mui/icons-material/Lock';
 
 const Auth = () => {
   const [authType, setAuthType] = useState<'individual' | 'family'>('individual');
@@ -58,30 +58,49 @@ const Auth = () => {
   };
 
   return (
-    <Box className="w--full display-flex-center full-screen flex--column">
-      <Typography
-        component={"h1"}
-        className="text--uppercase font-all-pro"
-        sx={{
-          letterSpacing: "3px",
-          fontSize: "32px",
-          color: colors.primary.main,
-        }}
-      >
-        {PROJECT_NAME}
-      </Typography>
-      <Box className="bg--white w--full mt--15" sx={{ maxWidth: "380px", borderRadius: "10px", border: "2px solid #ECECEC" }}>
+    <Box className="w--full display-flex-center full-screen flex--column" sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #e3f0ff 0%, #fceabb 100%)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      p: 2
+    }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+        <LockIcon sx={{ fontSize: 56, color: '#3183FF', mb: 1, boxShadow: 3, bgcolor: 'white', borderRadius: '50%', p: 1 }} />
+        <Typography
+          component={"h1"}
+          className="text--uppercase font-all-pro"
+          sx={{
+            letterSpacing: "3px",
+            fontSize: { xs: '2rem', sm: '2.5rem' },
+            color: '#3183FF',
+            fontWeight: 800,
+            mb: 1
+          }}
+        >
+          {PROJECT_NAME}
+        </Typography>
+        <Typography
+          variant="subtitle2"
+          align="center"
+          sx={{ fontWeight: 500, color: '#43a047', fontSize: { xs: '1rem', sm: '1.1rem' }, mb: 2 }}
+        >
+          Welcome back! Securely manage your family's finances.
+        </Typography>
+      </Box>
+      <Box className="bg--white w--full mt--15" sx={{ maxWidth: "380px", borderRadius: "18px", border: "2px solid #ECECEC", boxShadow: 4, p: 3 }}>
         <Box className="display-flex-center flex--column" sx={{ margin: "10px" }}>
           <Typography
             component={"h1"}
             className="font--semi-bold"
             sx={{
               fontSize: "24px",
-              margin: "50px 0",
-              color: colors.primary.main,
+              margin: "32px 0 24px 0",
+              color: '#3183FF',
+              fontWeight: 700
             }}
           >
-            Authentication
+            Sign In
           </Typography>
           <form
             onSubmit={e => {
@@ -91,19 +110,21 @@ const Auth = () => {
             style={{ width: '100%' }}
             autoComplete="off"
           >
-            <FormControl component="fieldset" sx={{ width: "30ch" }}>
+            <FormControl component="fieldset" sx={{ width: "100%", mb: 2 }}>
               <RadioGroup
                 value={authType}
                 onChange={(e) => setAuthType(e.target.value as 'individual' | 'family')}
+                row
+                sx={{ justifyContent: 'center' }}
               >
                 <FormControlLabel 
                   value="individual" 
-                  control={<Radio />} 
+                  control={<Radio sx={{ color: '#3183FF' }} />} 
                   label="Individual" 
                 />
                 <FormControlLabel 
                   value="family" 
-                  control={<Radio />} 
+                  control={<Radio sx={{ color: '#3183FF' }} />} 
                   label="Family" 
                 />
               </RadioGroup>
@@ -120,18 +141,20 @@ const Auth = () => {
               </FormControl>
             )}
 
-            <FormControl sx={{ m: 1, width: "30ch" }} variant="outlined">
+            <FormControl sx={{ m: 1, width: "100%" }} variant="outlined">
               <FormHelperText
                 id="pin-helper-text"
                 className="m--0 font--medium"
                 sx={{
-                  color: colors.black.main,
+                  color: '#888',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  mb: 1
                 }}
               >
-                Enter PIN
+                Enter 4-digit PIN
               </FormHelperText>
-            
-              <Box sx={{ display: 'flex', gap: '8px', justifyContent: 'center', mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: '16px', justifyContent: 'center', mt: 1 }}>
                 {[0, 1, 2, 3].map((index) => (
                   <TextField
                     key={index}
@@ -143,18 +166,26 @@ const Auth = () => {
                     inputProps={{
                       maxLength: 1,
                       style: {
-                        padding: "9px 15px",
+                        padding: "12px 0",
                         textAlign: "center",
-                        fontSize: "24px",
-                        width: "40px",
-                        height: "40px",
+                        fontSize: "28px",
+                        width: "48px",
+                        height: "48px",
+                        background: '#f5faff',
+                        borderRadius: '12px',
+                        border: '1.5px solid #3183FF',
+                        transition: 'box-shadow 0.2s',
                       },
                     }}
                     error={Boolean(error)}
                     sx={{
-                      width: "40px",
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
+                      width: "48px",
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: "12px",
+                        boxShadow: 1,
+                        '&:hover': {
+                          boxShadow: 3,
+                        },
                       },
                     }}
                   />
@@ -169,11 +200,13 @@ const Auth = () => {
 
             <Box
               sx={{
-                margin: "30px 16px",
+                margin: "30px 0 0 0",
                 gap: "5px",
-                width: "30ch",
+                width: "100%",
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
               }}
-              className="flex flex--column align-items--end"
             >
               <CustomButton
                 variant="contained"
@@ -182,8 +215,16 @@ const Auth = () => {
                 style={{
                   borderRadius: "25px",
                   width: "100%",
+                  background: 'linear-gradient(90deg, #3183FF 0%, #43a047 100%)',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  boxShadow: '0 4px 16px 0 rgba(49,131,255,0.10)',
+                  transition: 'transform 0.15s',
                 }}
                 text="Authenticate"
+                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
               />
             </Box>
           </form>
