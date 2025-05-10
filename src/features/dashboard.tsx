@@ -505,10 +505,6 @@ const Dashboard = () => {
         return null;
       })()}
 
-      {/* Greeting & Snapshots */}
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-        {getGreeting()}
-      </Typography>
       <Grid container spacing={{ xs: 4, sm: 2 }} sx={{ mb: { xs: 3, sm: 6 } }}>
         {/* Today's Spend */}
         <Grid item xs={12} sm={3}>
