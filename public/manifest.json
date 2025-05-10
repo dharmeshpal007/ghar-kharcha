@@ -1,7 +1,7 @@
 {
-    "name": "Money Expense Project",
-    "short_name": "Expense",
-    "description": "A PWA for tracking expenses",
+    "name": "Bachat Bandhu - A Family Finance Manager",
+    "short_name": "Bachat Bandhu",
+    "description": "A family finance manager that helps you manage your money, share it with your family, and control it anytime, anywhere.",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",

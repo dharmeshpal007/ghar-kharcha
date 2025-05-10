@@ -25,7 +25,19 @@ const Header = () => {
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <img src={logo} alt="Logo" style={{ height: 40, width: 40, marginRight: 12 }} />
-        <Typography variant="h6" fontWeight="bold">Bachat Bandhu</Typography>
+        <Typography 
+          variant="h5" 
+          sx={{
+            fontWeight: 800,
+            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '0.5px',
+            fontFamily: '"Poppins", sans-serif'
+          }}
+        >
+          Bachat Bandhu
+        </Typography>
       </Box>
       <CustomButton
         variant="outlined"

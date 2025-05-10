@@ -1,9 +1,17 @@
-import {
-    defineConfig,
-    minimal2023Preset as preset,
-} from "@vite-pwa/assets-generator/config";
+import { defineConfig } from '@vite-pwa/assets-generator/config'
 
 export default defineConfig({
-    preset,
-    images: ["public/vite.svg"],
-});
+  preset: {
+    transparent: {
+      sizes: [64, 192, 512],
+      favicons: [[64, 'favicon.ico']]
+    },
+    maskable: {
+      sizes: [512]
+    },
+    apple: {
+      sizes: [180]
+    }
+  },
+  images: ['src/assets/logo.png']
+})
