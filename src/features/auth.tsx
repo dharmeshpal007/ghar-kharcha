@@ -63,19 +63,34 @@ const Auth = () => {
       background: 'linear-gradient(135deg, #e3f0ff 0%, #fceabb 100%)',
       justifyContent: 'center',
       alignItems: 'center',
-      p: 2
+      p: { xs: 1, sm: 2 }
     }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-        <LockIcon sx={{ fontSize: 56, color: '#3183FF', mb: 1, boxShadow: 3, bgcolor: 'white', borderRadius: '50%', p: 1 }} />
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        mb: { xs: 1, sm: 2 },
+        px: { xs: 1, sm: 2 }
+      }}>
+        <LockIcon sx={{ 
+          fontSize: { xs: 40, sm: 56 }, 
+          color: '#3183FF', 
+          mb: 1, 
+          boxShadow: 3, 
+          bgcolor: 'white', 
+          borderRadius: '50%', 
+          p: { xs: 0.5, sm: 1 } 
+        }} />
         <Typography
           component={"h1"}
           className="text--uppercase font-all-pro"
           sx={{
-            letterSpacing: "3px",
-            fontSize: { xs: '2rem', sm: '2.5rem' },
+            letterSpacing: { xs: "2px", sm: "3px" },
+            fontSize: { xs: '1.5rem', sm: '2.5rem' },
             color: '#3183FF',
             fontWeight: 800,
-            mb: 1
+            mb: 1,
+            textAlign: 'center'
           }}
         >
           {PROJECT_NAME}
@@ -83,19 +98,33 @@ const Auth = () => {
         <Typography
           variant="subtitle2"
           align="center"
-          sx={{ fontWeight: 500, color: '#43a047', fontSize: { xs: '1rem', sm: '1.1rem' }, mb: 2 }}
+          sx={{ 
+            fontWeight: 500, 
+            color: '#43a047', 
+            fontSize: { xs: '0.875rem', sm: '1.1rem' }, 
+            mb: { xs: 1, sm: 2 },
+            px: { xs: 1, sm: 0 }
+          }}
         >
           Welcome back! Securely manage your family's finances.
         </Typography>
       </Box>
-      <Box className="bg--white w--full mt--15" sx={{ maxWidth: "380px", borderRadius: "18px", border: "2px solid #ECECEC", boxShadow: 4, p: 3 }}>
-        <Box className="display-flex-center flex--column" sx={{ margin: "10px" }}>
+      <Box className="bg--white w--full mt--15" sx={{ 
+        maxWidth: { xs: "100%", sm: "380px" }, 
+        width: { xs: "100%", sm: "auto" },
+        borderRadius: "18px", 
+        border: "2px solid #ECECEC", 
+        boxShadow: 4, 
+        p: { xs: 2, sm: 3 },
+        mx: { xs: 1, sm: 2 }
+      }}>
+        <Box className="display-flex-center flex--column" sx={{ margin: { xs: "5px", sm: "10px" } }}>
           <Typography
             component={"h1"}
             className="font--semi-bold"
             sx={{
-              fontSize: "24px",
-              margin: "32px 0 24px 0",
+              fontSize: { xs: "20px", sm: "24px" },
+              margin: { xs: "20px 0 16px 0", sm: "32px 0 24px 0" },
               color: '#3183FF',
               fontWeight: 700
             }}
@@ -154,7 +183,7 @@ const Auth = () => {
               >
                 Enter 4-digit PIN
               </FormHelperText>
-              <Box sx={{ display: 'flex', gap: '16px', justifyContent: 'center', mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: { xs: '8px', sm: '16px' }, justifyContent: 'center', mt: 1 }}>
                 {[0, 1, 2, 3].map((index) => (
                   <TextField
                     key={index}
@@ -166,11 +195,11 @@ const Auth = () => {
                     inputProps={{
                       maxLength: 1,
                       style: {
-                        padding: "12px 0",
+                        padding: "8px 0",
                         textAlign: "center",
-                        fontSize: "28px",
-                        width: "48px",
-                        height: "48px",
+                        fontSize: "24px",
+                        width: "40px",
+                        height: "40px",
                         background: '#f5faff',
                         borderRadius: '12px',
                         border: '1.5px solid #3183FF',
@@ -179,7 +208,7 @@ const Auth = () => {
                     }}
                     error={Boolean(error)}
                     sx={{
-                      width: "48px",
+                      width: { xs: "40px", sm: "48px" },
                       '& .MuiOutlinedInput-root': {
                         borderRadius: "12px",
                         boxShadow: 1,
@@ -218,9 +247,10 @@ const Auth = () => {
                   background: 'linear-gradient(90deg, #3183FF 0%, #43a047 100%)',
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                   boxShadow: '0 4px 16px 0 rgba(49,131,255,0.10)',
                   transition: 'transform 0.15s',
+                  padding: '8px 16px'
                 }}
                 text="Authenticate"
                 onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'}

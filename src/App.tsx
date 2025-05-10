@@ -1,9 +1,8 @@
-import { SnackbarProvider } from "notistack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import Route from "./hoc/routes/Route";
+import { SnackbarProvider } from "notistack";
 import { useEffect } from "react";
+import { BrowserRouter } from "react-router";
+import Route from "./hoc/routes/Route";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,7 +53,6 @@ const App = () => {
                 horizontal: "center",
               }}
             >
-              <ReactQueryDevtools initialIsOpen={false} />
               <Route />
             </SnackbarProvider>
           </QueryClientProvider>
