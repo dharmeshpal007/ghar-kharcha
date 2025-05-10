@@ -1,10 +1,11 @@
 import { Box, Typography, Card, Grid, Button, TextField, Chip, MenuItem, Select, InputLabel, FormControl, ToggleButton, ToggleButtonGroup, Divider, Dialog, DialogTitle, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, LinearProgress, Avatar, TablePagination, Tooltip, styled } from "@mui/material";
 import { useState, useEffect } from "react";
-import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward, Delete, Edit, Star, Info } from "@mui/icons-material";
+import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward, Delete, Edit, Star, Info, FileDownload } from "@mui/icons-material";
 import { addExpense, Expense, listenExpenses, deleteExpense, updateExpense } from "../services/firebase";
 import { SelectChangeEvent } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { useAuthStore } from "../store/authStore";
+import * as XLSX from 'xlsx';
 
 const initialCategories = [
   { label: "Salary" },
@@ -333,6 +334,35 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Add export to Excel function
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = sortedExpenses.map(exp => ({
+      Date: exp.date,
+      Amount: exp.amount,
+      Type: exp.type,
+      Category: exp.category,
+      Mood: exp.mood,
+      Member: exp.user,
+      Recurring: exp.recurring ? 'Yes' : 'No',
+      Goal: exp.goal || '',
+      Notes: exp.notes || ''
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
+
+    // Generate filename with current date
+    const fileName = `expenses_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
       {/* Greeting */}
@@ -608,20 +638,36 @@ const Dashboard = () => {
         gap: 2,
         flexDirection: { xs: 'column', sm: 'row' }
       }}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          sx={{ 
-            fontWeight: 600, 
-            fontSize: { xs: 16, sm: 18 }, 
-            minWidth: { xs: '100%', sm: 160 },
-            mb: { xs: 1, sm: 0 }
-          }}
-          onClick={() => { setEditExpense(null); setOpen(true); }}
-        >
-          Add Transaction
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, width: { xs: '100%', sm: 'auto' } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            sx={{ 
+              fontWeight: 600, 
+              fontSize: { xs: 16, sm: 18 }, 
+              minWidth: { xs: '100%', sm: 160 },
+              mb: { xs: 1, sm: 0 }
+            }}
+            onClick={() => { setEditExpense(null); setOpen(true); }}
+          >
+            Add Transaction
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<FileDownload />}
+            onClick={exportToExcel}
+            sx={{ 
+              fontWeight: 600, 
+              fontSize: { xs: 16, sm: 18 }, 
+              minWidth: { xs: '100%', sm: 160 },
+              mb: { xs: 1, sm: 0 }
+            }}
+          >
+            Export Excel
+          </Button>
+        </Box>
         <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 140 } }}>
           <InputLabel>Time Filter</InputLabel>
           <Select
