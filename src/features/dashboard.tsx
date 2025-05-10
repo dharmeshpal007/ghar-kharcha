@@ -517,8 +517,8 @@ const Dashboard = () => {
           {chartMode === 'date' ? (
             <BarChart data={weekChartData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" tick={{ fontSize: { xs: 10, sm: 12 } }} />
-              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: { xs: 10, sm: 12 } }} />
+              <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
               <Tooltip />
               <Legend />
               <Bar dataKey="total" fill="#3183FF" name="Total Spend" radius={[8, 8, 0, 0]} />
@@ -526,8 +526,8 @@ const Dashboard = () => {
           ) : chartMode === 'mood' ? (
             <BarChart data={moodChartData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mood" tick={{ fontSize: { xs: 10, sm: 12 } }} />
-              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: { xs: 10, sm: 12 } }} />
+              <XAxis dataKey="mood" tick={{ fontSize: 10 }} />
+              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
               <Tooltip />
               <Legend />
               <Bar dataKey="total" fill="#43a047" name="Total Spend" radius={[8, 8, 0, 0]} />
@@ -535,8 +535,8 @@ const Dashboard = () => {
           ) : (
             <BarChart data={categoryChartData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" tick={{ fontSize: { xs: 10, sm: 12 } }} />
-              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: { xs: 10, sm: 12 } }} />
+              <XAxis dataKey="category" tick={{ fontSize: 10 }} />
+              <YAxis tickFormatter={v => `₹${v}`} tick={{ fontSize: 10 }} />
               <Tooltip />
               <Legend />
               <Bar dataKey="total" fill="#ff9800" name="Total Spend" radius={[8, 8, 0, 0]} />
