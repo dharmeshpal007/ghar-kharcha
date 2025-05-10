@@ -280,13 +280,19 @@ const Dashboard = () => {
   });
 
   // Weekly bar chart data (by category)
-  const weekCategories = categories.filter(cat => cat.label !== 'More');
-  const categoryChartData = weekCategories.map(cat => {
+  // Get unique categories from the data
+  const uniqueCategories = Array.from(new Set(
+    filteredExpenses
+      .filter(e => weekDates.includes(e.date) && e.type === 'expense')
+      .map(e => e.category)
+  )).filter(Boolean); // Remove any null/undefined categories
+
+  const categoryChartData = uniqueCategories.map(category => {
     const total = filteredExpenses
-      .filter(e => weekDates.includes(e.date) && e.category === cat.label && e.type === 'expense')
+      .filter(e => weekDates.includes(e.date) && e.category === category && e.type === 'expense')
       .reduce((sum, e) => sum + (e.amount || 0), 0);
-    return { category: cat.label, total };
-  });
+    return { category, total };
+  }).filter(data => data.total > 0); // Only show categories with expenses
 
   // Helper: is date in current month?
   function isThisMonth(dateStr: string) {
