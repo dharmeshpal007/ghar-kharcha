@@ -10,7 +10,7 @@ interface IProps {
 const ErrorPage = ({ error }: IProps) => {
   const navigate = useNavigate();
   const { setLoggedIn, setUserData } = useBoilerPlateStore((state) => state);
-
+  console.log('error.message', error.message)
   const errorsState = JSON.parse(error.message);
   let errorChildren = <></>;
 

@@ -1,6 +1,6 @@
-# 💸 Ghar Kharcha – Daily Expense Manager
+# 💸 Budget Bandhu – Daily Expense Manager
 
-**Ghar Kharcha** is a human-centered personal finance app built for Indian users. Whether you're tracking expenses for yourself or managing the finances of a joint family, this app simplifies money management with a culturally relevant, intuitive experience.
+**Budget Bandhu** is a human-centered personal finance app built for Indian users. Whether you're tracking expenses for yourself or managing the finances of a joint family, this app simplifies money management with a culturally relevant, intuitive experience.
 
 ---
 
