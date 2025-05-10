@@ -419,7 +419,7 @@ const Dashboard = () => {
               <Star sx={{ color: isGoodMood ? '#43a047' : '#e53935', fontSize: 36, mr: 1 }} />
               <Box>
                 <Typography sx={{ fontWeight: 600, color: '#333', fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                  Today you have spent {percent}% of expenses while you are in {moodLabel.toLowerCase()}.
+                  Today you have spent {percent}% of expenses while you are {moodLabel.toLowerCase()}.
                 </Typography>
               </Box>
               <StyledTooltip 
