@@ -63,6 +63,24 @@ const StyledTooltip = styled(({ className, ...props }: any) => (
 }));
 
 const Dashboard = () => {
+  // Add greeting function
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    let greeting = '';
+    
+    if (hour >= 5 && hour < 12) {
+      greeting = 'Good Morning';
+    } else if (hour >= 12 && hour < 17) {
+      greeting = 'Good Afternoon';
+    } else if (hour >= 17 && hour < 21) {
+      greeting = 'Good Evening';
+    } else {
+      greeting = 'Good Night';
+    }
+
+    return `${greeting}, ${authType === 'family' ? 'Family!' : currentUser}!`;
+  };
+
   // Entry form state
   const [amount, setAmount] = useState("");
   const [categories, setCategories] = useState(initialCategories);
@@ -91,6 +109,10 @@ const Dashboard = () => {
   const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
   // Edit state
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
+  // Add tooltip state
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  // Add date state
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
 
   const authType = useAuthStore(state => state.authType);
   const currentUser = useAuthStore(state => state.currentUser);
@@ -120,7 +142,7 @@ const Dashboard = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newExpense: Expense = {
-      date: new Date().toISOString().slice(0, 10),
+      date: selectedDate || new Date().toISOString().slice(0, 10), // Use selected date or default to today
       amount: Number(amount),
       category,
       mood: moods.find(m => m.label === mood)?.icon || "",
@@ -134,7 +156,7 @@ const Dashboard = () => {
       if (editExpense && editExpense.key) {
         await updateExpense(editExpense.key, {
           ...newExpense,
-          date: editExpense.date // preserve original date
+          date: editExpense.date // preserve original date when editing
         });
       } else {
         await addExpense(newExpense);
@@ -150,6 +172,7 @@ const Dashboard = () => {
     setRecurring(false);
     setGoal("");
     setTransactionType('expense');
+    setSelectedDate(new Date().toISOString().slice(0, 10)); // Reset date to today
     setEditExpense(null);
     setOpen(false);
   };
@@ -165,6 +188,7 @@ const Dashboard = () => {
       setRecurring(editExpense.recurring);
       setGoal(editExpense.goal);
       setTransactionType(editExpense.type);
+      setSelectedDate(editExpense.date); // Set the date from the expense being edited
       setOpen(true);
     }
   }, [editExpense]);
@@ -285,8 +309,40 @@ const Dashboard = () => {
   const remainingSalary = totalSalary - totalExpenses;
   const isOverBudget = totalExpenses > totalSalary;
 
+  // Add click handler for tooltip
+  const handleTooltipClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setTooltipOpen(!tooltipOpen);
+  };
+
+  // Add click handler to close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setTooltipOpen(false);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      {/* Greeting */}
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          fontSize: { xs: '1.5rem', sm: '2rem' },
+          color: '#3183FF',
+          mb: 2,
+          textAlign: 'center'
+        }}
+      >
+        {getGreeting()}
+      </Typography>
+
       {/* Slogan */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
         <Typography
@@ -318,6 +374,7 @@ const Dashboard = () => {
 
       {/* USP Mood Analysis Message */}
       {(() => {
+        
         // Calculate total expenses for today
         const totalTodayExpense = filteredExpenses.filter(e => e.date === todayStr && e.type === 'expense').reduce((sum, e) => sum + (e.amount || 0), 0);
         // Calculate total expenses for each mood for today
@@ -356,7 +413,7 @@ const Dashboard = () => {
               <Star sx={{ color: isGoodMood ? '#43a047' : '#e53935', fontSize: 36, mr: 1 }} />
               <Box>
                 <Typography sx={{ fontWeight: 600, color: '#333', fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                  You have spent {percent}% of expenses while you are in {moodLabel.toLowerCase()}.
+                  Today you have spent {percent}% of expenses while you are in {moodLabel.toLowerCase()}.
                 </Typography>
               </Box>
               <StyledTooltip 
@@ -390,13 +447,15 @@ const Dashboard = () => {
                     )
                 }
                 arrow
-                placement="right"
+                placement="bottom"
+                open={tooltipOpen}
+                onClose={() => setTooltipOpen(false)}
               >
                 <Info 
+                  onClick={handleTooltipClick}
                   sx={{ 
                     color: isGoodMood ? '#43a047' : '#e53935',
                     cursor: 'pointer',
-                    ml: 1,
                     transition: 'transform 0.2s',
                     '&:hover': {
                       transform: 'scale(1.2)'
@@ -412,7 +471,7 @@ const Dashboard = () => {
 
       {/* Greeting & Snapshots */}
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-        Good Morning, Family!
+        {getGreeting()}
       </Typography>
       <Grid container spacing={{ xs: 4, sm: 2 }} sx={{ mb: { xs: 3, sm: 6 } }}>
         {/* Today's Spend */}
@@ -580,7 +639,13 @@ const Dashboard = () => {
           mb: 2, 
           maxHeight: { xs: 300, sm: 350 }, 
           minHeight: { xs: 300, sm: 350 }, 
-          overflowX: 'auto'
+          overflowX: 'auto',
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          '& .MuiTable-root': {
+            borderCollapse: 'separate',
+            borderSpacing: '0 4px',
+          }
         }}
       >
         <Table size="small" stickyHeader>
@@ -592,59 +657,211 @@ const Dashboard = () => {
                   setSortBy('date');
                 }} 
                 style={{ cursor: 'pointer', userSelect: 'none' }}
-                sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
+                sx={{ 
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  fontWeight: 600,
+                  backgroundColor: '#f8f9fa',
+                  color: '#333',
+                  '&:hover': {
+                    backgroundColor: '#e9ecef',
+                  }
+                }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   Date
                   {sortBy === 'date' && (sortOrder === 'desc' ? <ArrowDownward fontSize="small" /> : <ArrowUpward fontSize="small" />)}
                 </Box>
               </TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Amount</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Category</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Mood</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Member</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Recurring</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Goal</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Notes</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}></TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}></TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Amount</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Category</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Mood</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Member</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Recurring</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Goal</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}>Notes</TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}></TableCell>
+              <TableCell sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                fontWeight: 600,
+                backgroundColor: '#f8f9fa',
+                color: '#333'
+              }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} align="center">
+                <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
                   <CircularProgress size={32} />
                 </TableCell>
               </TableRow>
             ) : paginatedExpenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} align="center">
+                <TableCell colSpan={10} align="center" sx={{ py: 4, color: '#666' }}>
                   No expenses found.
                 </TableCell>
               </TableRow>
             ) : (
               paginatedExpenses.map((exp, idx) => (
-                <TableRow key={idx}>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.date || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>₹{exp.amount || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.category || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.mood || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.user || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.recurring ? "Yes" : "No"}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.goal || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.notes || '-'}</TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                <TableRow 
+                  key={idx}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: '#f8f9fa',
+                      '& .MuiTableCell-root': {
+                        borderBottom: '1px solid #e9ecef',
+                      }
+                    },
+                    transition: 'background-color 0.2s',
+                    '& .MuiTableCell-root': {
+                      borderBottom: '1px solid #f0f0f0',
+                      py: 1.5
+                    }
+                  }}
+                >
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057',
+                    fontWeight: 500
+                  }}>{exp.date || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: exp.type === 'expense' ? '#dc3545' : '#28a745',
+                    fontWeight: 600
+                  }}>₹{exp.amount || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>
+                    <Chip 
+                      label={exp.category || '-'} 
+                      size="small" 
+                      sx={{ 
+                        backgroundColor: exp.category === 'Salary' ? '#d4edda' : '#cce5ff',
+                        color: exp.category === 'Salary' ? '#155724' : '#004085',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                      }} 
+                    />
+                  </TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>{exp.mood || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>{exp.user || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>
+                    {exp.recurring ? (
+                      <Chip 
+                        label="Yes" 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: '#fff3cd',
+                          color: '#856404',
+                          fontWeight: 500,
+                          fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                        }} 
+                      />
+                    ) : (
+                      <Chip 
+                        label="No" 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: '#f8f9fa',
+                          color: '#6c757d',
+                          fontWeight: 500,
+                          fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                        }} 
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>{exp.goal || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057',
+                    maxWidth: '150px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>{exp.notes || '-'}</TableCell>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>
                     <Edit
                       color="primary"
-                      sx={{ cursor: 'pointer', mr: 1 }}
+                      sx={{ 
+                        cursor: 'pointer', 
+                        mr: 1,
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.2)'
+                        }
+                      }}
                       onClick={() => setEditExpense(exp)}
                     />
                   </TableCell>
-                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  <TableCell sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                    color: '#495057'
+                  }}>
                     <Delete 
                       color="error" 
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ 
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.2)'
+                        }
+                      }}
                       onClick={async () => {
                         if (window.confirm('Delete this transaction?')) {
                           if (exp.key) {
@@ -774,6 +991,27 @@ const Dashboard = () => {
                   }}
                   sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}
                 />
+              </Grid>
+              <Grid item>
+                <TextField
+                  label="Date (optional)"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  inputProps={{
+                    max: new Date().toISOString().slice(0, 10), // Set minimum date to today
+                  }}
+
+                  sx={{ 
+                    '& .MuiInputLabel-root': { fontSize: { xs: '0.8rem', sm: '0.875rem' } },
+                    '& .MuiInputBase-input': { fontSize: { xs: '0.8rem', sm: '0.875rem' } }
+                  }}
+                />
+
               </Grid>
               <Grid item>
                 <Typography variant="subtitle2" sx={{ mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Category</Typography>

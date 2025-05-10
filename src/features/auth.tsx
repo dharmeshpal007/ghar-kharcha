@@ -202,7 +202,7 @@ const Auth = () => {
                         height: "40px",
                         background: '#f5faff',
                         borderRadius: '12px',
-                        border: '1.5px solid #3183FF',
+                        // border: '1.5px solid #3183FF',
                         transition: 'box-shadow 0.2s',
                       },
                     }}
