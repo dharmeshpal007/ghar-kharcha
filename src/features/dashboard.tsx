@@ -1,7 +1,7 @@
 import { Box, Typography, Card, Grid, Button, TextField, Chip, MenuItem, Select, InputLabel, FormControl, ToggleButton, ToggleButtonGroup, Divider, Dialog, DialogTitle, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, LinearProgress, Avatar, TablePagination } from "@mui/material";
 import { useState, useEffect } from "react";
-import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward } from "@mui/icons-material";
-import { addExpense, Expense, listenExpenses } from "../services/firebase";
+import { Add, Repeat, MonetizationOn, PieChart, EmojiEmotions, Flag, ArrowDownward, ArrowUpward, Delete, Edit } from "@mui/icons-material";
+import { addExpense, Expense, listenExpenses, deleteExpense, updateExpense } from "../services/firebase";
 import { SelectChangeEvent } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { useAuthStore } from "../store/authStore";
@@ -69,7 +69,8 @@ const Dashboard = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   // Transaction type state
   const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
-
+  // Edit state
+  const [editExpense, setEditExpense] = useState<Expense | null>(null);
 
   const authType = useAuthStore(state => state.authType);
   const currentUser = useAuthStore(state => state.currentUser);
@@ -110,7 +111,14 @@ const Dashboard = () => {
       type: transactionType,
     };
     try {
-      await addExpense(newExpense);
+      if (editExpense && editExpense.key) {
+        await updateExpense(editExpense.key, {
+          ...newExpense,
+          date: editExpense.date // preserve original date
+        });
+      } else {
+        await addExpense(newExpense);
+      }
     } catch {
       alert("Failed to save expense to Firebase");
     }
@@ -122,8 +130,24 @@ const Dashboard = () => {
     setRecurring(false);
     setGoal("");
     setTransactionType('expense');
+    setEditExpense(null);
     setOpen(false);
   };
+
+  // When editing, prefill form
+  useEffect(() => {
+    if (editExpense) {
+      setAmount(editExpense.amount.toString());
+      setCategory(editExpense.category);
+      setMood(moods.find(m => m.icon === editExpense.mood)?.label || "");
+      setNotes(editExpense.notes);
+      setUser(editExpense.user);
+      setRecurring(editExpense.recurring);
+      setGoal(editExpense.goal);
+      setTransactionType(editExpense.type);
+      setOpen(true);
+    }
+  }, [editExpense]);
 
   // Filtering and sorting logic
   const now = new Date();
@@ -187,9 +211,13 @@ const Dashboard = () => {
   });
   const moodChartData = Object.entries(moodTotals).map(([mood, total]) => ({ mood, total }));
 
-  // Calculate today's spend from expenses
+  // Helper to get today's date in YYYY-MM-DD format
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // Calculate today's spend from expenses (only expenses, not salary)
   const todaySpend = filteredExpenses
-    .filter(e => e.date === yesterdayStr)
+    .filter(e => e.date === todayStr && e.type === 'expense')
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
   // Calculate today's mood summary and mode
@@ -240,9 +268,33 @@ const Dashboard = () => {
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
       {/* Slogan */}
-      <Typography variant="subtitle2" align="center" sx={{ fontWeight: 600, color: "#3183FF", mb: 2, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-        Manage, Share, and Control Your Finances — Anytime, Anywhere
-      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+        <Typography
+          variant="h6"
+          align="center"
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: '1.1rem', sm: '1.5rem' },
+            background: 'linear-gradient(90deg, #3183FF 0%, #43a047 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 0.5
+          }}
+        >
+          <span role="img" aria-label="wallet" style={{ marginRight: 8 }}>👛</span>
+          Manage, Share, and Control Your Finances — Anytime, Anywhere
+        </Typography>
+        <Typography
+          variant="subtitle2"
+          align="center"
+          sx={{ fontWeight: 500, color: '#43a047', fontSize: { xs: '0.85rem', sm: '1rem' } }}
+        >
+          Empowering your family's financial journey!
+        </Typography>
+      </Box>
 
       {/* Greeting & Snapshots */}
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
@@ -388,7 +440,7 @@ const Dashboard = () => {
             minWidth: { xs: '100%', sm: 160 },
             mb: { xs: 1, sm: 0 }
           }}
-          onClick={() => setOpen(true)}
+          onClick={() => { setEditExpense(null); setOpen(true); }}
         >
           Add Transaction
         </Button>
@@ -441,18 +493,20 @@ const Dashboard = () => {
               <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Recurring</TableCell>
               <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Goal</TableCell>
               <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>Notes</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}></TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={10} align="center">
                   <CircularProgress size={32} />
                 </TableCell>
               </TableRow>
             ) : paginatedExpenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={10} align="center">
                   No expenses found.
                 </TableCell>
               </TableRow>
@@ -467,6 +521,26 @@ const Dashboard = () => {
                   <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.recurring ? "Yes" : "No"}</TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.goal || '-'}</TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>{exp.notes || '-'}</TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <Edit
+                      color="primary"
+                      sx={{ cursor: 'pointer', mr: 1 }}
+                      onClick={() => setEditExpense(exp)}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <Delete 
+                      color="error" 
+                      sx={{ cursor: 'pointer' }}
+                      onClick={async () => {
+                        if (window.confirm('Delete this transaction?')) {
+                          if (exp.key) {
+                            await deleteExpense(exp.key);
+                          }
+                        }
+                      }}
+                    />
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -548,7 +622,7 @@ const Dashboard = () => {
       {/* Entry Form Dialog */}
       <Dialog 
         open={open} 
-        onClose={() => setOpen(false)} 
+        onClose={() => { setOpen(false); setEditExpense(null); }} 
         fullWidth 
         maxWidth="xs"
         PaperProps={{
