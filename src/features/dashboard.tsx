@@ -28,7 +28,6 @@ const goals = ["Trip to Goa", "New Phone", "Emergency Fund"];
 
 // Add mood categories after the moods array
 const goodMoods = ["Happy", "Neutral", "Satisfied"];
-const badMoods = ["Stressed", "Impulsive", "Regretful"];
 
 // Helper to get start of week (Monday)
 function getStartOfWeek(date: Date) {
@@ -47,9 +46,10 @@ function formatDate(date: Date) {
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 // Add styled tooltip component after imports
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StyledTooltip = styled(({ className, ...props }: any) => (
   <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
+))(() => ({
   '& .MuiTooltip-tooltip': {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     color: '#333',
